@@ -1,0 +1,6 @@
+*) Include all props in onDrag & onDrop events
+*) Alternate team and enemy moves
+*) Queen isCheck
+*) Moves wrt. queen isCheck state
+--- If time --- pawns 2 block jumps
+--- If time --- king's castle
