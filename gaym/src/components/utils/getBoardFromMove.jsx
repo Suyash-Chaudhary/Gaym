@@ -45,7 +45,7 @@ const getBoardFromMove = (teamRef, enemyTeam, gridRef) => {
 
     for (let i = 0; i < 8; i++) {
         let idx = 63 - enemyTeam["pawns"][i];
-        if (idx > 63) idx = -1;
+        if (idx > 63) idx = 63 - idx;
         newEnemy["pawns"][i] = idx;
 
         if (idx >= 0 && grid[idx].team === 1)
@@ -58,11 +58,13 @@ const getBoardFromMove = (teamRef, enemyTeam, gridRef) => {
     if (idx >= 0 && grid[idx].team === 1)
         newTeam[grid[idx].type][grid[idx].index] = -1;
 
-    idx = 63 - enemyTeam["queen"][0];
-    if (idx > 63) idx = -1;
-    newEnemy["queen"][0] = idx;
-    if (idx >= 0 && grid[idx].team === 1)
-        newTeam[grid[idx].type][grid[idx].index] = -1;
+    for (let i = 0; i < enemyTeam["queen"].length; i++) {
+        idx = 63 - enemyTeam["queen"][i];
+        if (idx > 63) idx = -1;
+        newEnemy["queen"][i] = idx;
+        if (idx >= 0 && grid[idx].team === 1)
+            newTeam[grid[idx].type][grid[idx].index] = -1;
+    }
 
     return { newEnemy, newTeam };
 };

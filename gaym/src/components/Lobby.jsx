@@ -3,15 +3,20 @@ import { SocketContext } from "../hooks/socket";
 import ChessBoard from "./chess/board";
 import subscribeToRoom from "./utils/subscriboToRoom";
 import unsubscribeToRoom from "./utils/unsubscribeToRoom";
+import "../static/css/lobby.css";
 
 const Lobby = (props) => {
     const { roomId, name, setIsReady, game } = props;
-    const [start, setStart] = useState({begin: false, played: false, msg: ""});
-    const [turn, setTurn] = useState(false);
+    const [start, setStart] = useState({
+        begin: false,
+        played: false,
+        msg: "",
+        startPlayer: "",
+    });
     const socket = useContext(SocketContext);
 
     useEffect(() => {
-        subscribeToRoom(socket, setStart, name, roomId, game, setTurn);
+        subscribeToRoom(socket, setStart, name, roomId, game);
 
         return () => {
             unsubscribeToRoom(socket, name, roomId, game);
@@ -33,13 +38,23 @@ const Lobby = (props) => {
                     onQuit={handleQuit}
                     name={name}
                     roomId={roomId}
-                    turn={turn}
+                    startPlayer={start.startPlayer}
                 ></ChessBoard>
             ) : (
                 <div className="chess-lobby">
-                    <div>Room: {roomId}</div>
-                    <div>Name: {name}</div>
-                    {start.played ? <span>{start.msg}</span>: <span>Waiting for a player</span>}
+                    <div className="input">
+                        <label>Room:</label>
+                        <span>{roomId}</span>
+                    </div>
+                    <div className="input">
+                        <label>Name:</label>
+                        <span>{name}</span>
+                    </div>
+                    {start.played ? (
+                        <span>{start.msg}</span>
+                    ) : (
+                        <span>Waiting for a player</span>
+                    )}
                     <button onClick={handleLeave}>Leave</button>
                 </div>
             )}

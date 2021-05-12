@@ -15,30 +15,36 @@ import possibleMoves from "../utils/possibleMoves";
 import { SocketContext } from "../../hooks/socket";
 
 const ChessBoard = (props) => {
-    const { name, roomId, onQuit, turn: initTurn } = props;
-    const [enemy, setEnemy] = useState(initEnemy);
-    const [team, setTeam] = useState(initTeam);
-    const [grid, setGrid] = useState(generateGrid(initTeam, initEnemy));
+    const { name, roomId, onQuit, startPlayer } = props;
+    const initTurn = startPlayer === name;
+    const [enemy, setEnemy] = useState({});
+    const [team, setTeam] = useState({});
+    const [grid, setGrid] = useState([]);
     const [drag, setDrag] = useState({});
     const [turn, setTurn] = useState(initTurn);
-    const [time, setTime] = useState(30)
+    const [time, setTime] = useState(3600);
+    const [teamDeadPeices, setTeamDeadPeices] = useState([]);
+    const [enemyDeadPeices, setEnemyDeadPeices] = useState([]);
     const socket = useContext(SocketContext);
     const gridRef = useRef();
     const teamRef = useRef();
     const enemyRef = useRef();
 
     const tick = () => {
-        if(turn)
-            setTime(time - 1);
+        if (turn) setTime(time - 1);
     };
 
     useEffect(() => {
-        if(time === 0) socket.emit("player-lose", {name, game: "chess", roomId});
+        if (time === 0)
+            socket.emit("player-lose", { name, game: "chess", roomId });
         const timerId = setInterval(() => tick(), 1000);
         return () => clearInterval(timerId);
     }, [time, turn]);
 
     useEffect(() => {
+        setEnemy(initEnemy);
+        setTeam(initTeam);
+        setGrid(generateGrid(initTeam, initEnemy, "initial").newGrid);
         socket.on("enemy-move", (data) => {
             const { name: enemyName, newTeam: enemyTeam } = data;
 
@@ -48,12 +54,11 @@ const ChessBoard = (props) => {
                     enemyTeam,
                     gridRef
                 );
-            
+
                 const isMovePossible = possibleMoves(newTeam, newEnemy);
-                if(!isMovePossible)
-                    socket.emit("player-lose", {name, game: "chess", roomId});
-                else
-                {
+                if (!isMovePossible)
+                    socket.emit("player-lose", { name, game: "chess", roomId });
+                else {
                     setTeam({ ...newTeam });
                     setEnemy({ ...newEnemy });
                     setTurn(true);
@@ -69,9 +74,15 @@ const ChessBoard = (props) => {
     useEffect(() => {
         teamRef.current = team;
         enemyRef.current = enemy;
-        if (enemy.knights) {
-            const newGrid = generateGrid(team, enemy);
+        if (enemy.knights && team.knights) {
+            const { newGrid, teamDead, enemyDead } = generateGrid(
+                team,
+                enemy,
+                "useEffect"
+            );
             setGrid(newGrid);
+            setEnemyDeadPeices(enemyDead);
+            setTeamDeadPeices(teamDead);
             gridRef.current = newGrid;
         }
     }, [enemy, team]);
@@ -81,7 +92,13 @@ const ChessBoard = (props) => {
     };
 
     const handleDrop = (blockIndex) => {
-        const isValid = isValidMove(grid, team, drag, blockIndex, enemyRef.current);
+        const isValid = isValidMove(
+            grid,
+            team,
+            drag,
+            blockIndex,
+            enemyRef.current
+        );
         if (!isValid) return;
 
         const newEnemy =
@@ -108,31 +125,91 @@ const ChessBoard = (props) => {
             });
 
             setTurn(false);
+        } else alert("Your king is in check");
+    };
+
+    const formatTime = (time) => {
+        const hours = Math.floor(time / 3600);
+        const mins = Math.floor((time % 3600) / 60);
+        const secs = time % 60;
+        function pad(num, size) {
+            var s = "00" + num;
+            return s.substr(s.length - size);
         }
+
+        return (
+            hours.toString() +
+            ":" +
+            pad(mins.toString(), 2) +
+            ":" +
+            pad(secs.toString(), 2)
+        );
     };
 
     return (
-        <>
-            <span>
-                Name: {name} roomId:{roomId} time:{time}
-            </span>
-            <div className="board">
-                {grid.map((g, i) => (
-                    <Block
-                        type={g.type}
-                        team={g.team}
-                        index={g.index}
-                        key={i}
-                        blockIndex={i}
-                        handleDrag={handleDrag}
-                        handleDrop={handleDrop}
-                        turn={turn}
-                        isWhite={initTurn}
-                    ></Block>
-                ))}
+        <div className="board-wrapper">
+            <div className="info">
+                <span id="logo">Chess</span>
+                <span id="name">Player: {name}</span>
+                <span id="time">Time left- {formatTime(time)}</span>
+                <button id="quit" onClick={onQuit}>
+                    Quit
+                </button>
             </div>
-            <button onClick={onQuit}>Quit</button>
-        </>
+            <div className="board-container">
+                <div className="dead-wrapper">
+                    <div className="dead">
+                        {enemyDeadPeices.map((p, i) => (
+                            <Block
+                                type={p}
+                                team={false}
+                                index={0}
+                                key={i}
+                                blockIndex={1}
+                                handleDrag={handleDrag}
+                                handleDrop={handleDrop}
+                                turn={false}
+                                isWhite={initTurn}
+                            ></Block>
+                        ))}
+                    </div>
+                </div>
+                <div className="table">
+                    <div className="board">
+                        {grid.map((g, i) => (
+                            <Block
+                                type={g.type}
+                                team={g.team}
+                                index={g.index}
+                                key={i}
+                                blockIndex={i}
+                                handleDrag={handleDrag}
+                                handleDrop={handleDrop}
+                                turn={turn}
+                                isWhite={initTurn}
+                            ></Block>
+                        ))}
+                    </div>
+                </div>
+                <div className="dead-wrapper">
+                    <div className="dead">
+                        {teamDeadPeices.map((p, i) => (
+                            <Block
+                                type={p}
+                                team={true}
+                                index={0}
+                                key={i}
+                                blockIndex={1}
+                                handleDrag={handleDrag}
+                                handleDrop={handleDrop}
+                                turn={false}
+                                isWhite={initTurn}
+                            ></Block>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

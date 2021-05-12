@@ -11,7 +11,10 @@ const updateTeam = (team, blockIndex, drag) => {
         pawns: [...team.pawns],
     };
 
-    newTeam[type][index] = blockIndex;
+    if (type === "pawns" && blockIndex < 8 && blockIndex > 0) {
+        newTeam[type][index] = -2;
+        newTeam["queen"].push(blockIndex);
+    } else newTeam[type][index] = blockIndex;
 
     return newTeam;
 };

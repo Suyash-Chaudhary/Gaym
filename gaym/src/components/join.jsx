@@ -4,6 +4,7 @@ import axios from "axios";
 import { useState } from "react";
 import Lobby from "./Lobby";
 import { SocketContext, socket } from "../hooks/socket";
+import "../static/css/join.css";
 
 const Join = (props) => {
     const { game } = props;
@@ -31,7 +32,7 @@ const Join = (props) => {
     };
 
     return (
-        <>
+        <div className="container">
             {isReady.ready ? (
                 <SocketContext.Provider value={socket}>
                     <Lobby
@@ -44,11 +45,14 @@ const Join = (props) => {
             ) : (
                 <div className="join-chess">
                     <form onSubmit={handleSubmit}>
-                        <input
-                            name="name"
-                            value={form.name}
-                            onChange={handleChange}
-                        ></input>
+                        <div className="input">
+                            <label>Name</label>
+                            <input
+                                name="name"
+                                value={form.name}
+                                onChange={handleChange}
+                            ></input>
+                        </div>
                         <select
                             name="newRoom"
                             value={form.newRoom}
@@ -58,17 +62,20 @@ const Join = (props) => {
                             <option value="false">Join Room</option>
                         </select>
                         {form.newRoom === "false" && (
-                            <input
-                                name="roomId"
-                                value={form.roomId}
-                                onChange={handleChange}
-                            ></input>
+                            <div className="input">
+                                <label>Room ID</label>
+                                <input
+                                    name="roomId"
+                                    value={form.roomId}
+                                    onChange={handleChange}
+                                ></input>
+                            </div>
                         )}
                         <button type="submit">Join</button>
                     </form>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 

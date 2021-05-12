@@ -7,8 +7,7 @@ const isAttacking = (kingIndex, peiceIndex, type, grid) => {
     let ip = Math.floor(peiceIndex / 8);
     let jp = peiceIndex % 8;
 
-    if (ip === iq && jp === jq)
-        return false;
+    if (ip === iq && jp === jq) return false;
 
     const di = iq - ip === 0 ? 0 : (iq - ip) / Math.abs(iq - ip);
     const dj = jq - jp === 0 ? 0 : (jq - jp) / Math.abs(jq - jp);
@@ -78,24 +77,44 @@ const isAttacking = (kingIndex, peiceIndex, type, grid) => {
 
 const isUnderAttack = (targetIndex, team, grid) => {
     for (let i = 0; i < 8; i++)
-        if(isAttacking(targetIndex, team["pawns"][i], "pawns", grid))
-            return { isCheck: true, type: "pawns", peiceIndex: team["pawns"][i] };
+        if (isAttacking(targetIndex, team["pawns"][i], "pawns", grid))
+            return {
+                isCheck: true,
+                type: "pawns",
+                peiceIndex: team["pawns"][i],
+            };
 
-    for (let i = 0; i < 2; i++)
-    {
-        if(isAttacking(targetIndex, team["rooks"][i], "rooks", grid))
-            return { isCheck: true, type: "rooks", peiceIndex: team["rooks"][i] };
-        
-        if(isAttacking(targetIndex, team["knights"][i], "knights", grid))
-            return { isCheck: true, type: "knights", peiceIndex: team["knights"][i] };
-        
-        if(isAttacking(targetIndex, team["bishops"][i], "bishops", grid))
-            return { isCheck: true, type: "bishops", peiceIndex: team["bishops"][i] };
+    for (let i = 0; i < 2; i++) {
+        if (isAttacking(targetIndex, team["rooks"][i], "rooks", grid))
+            return {
+                isCheck: true,
+                type: "rooks",
+                peiceIndex: team["rooks"][i],
+            };
+
+        if (isAttacking(targetIndex, team["knights"][i], "knights", grid))
+            return {
+                isCheck: true,
+                type: "knights",
+                peiceIndex: team["knights"][i],
+            };
+
+        if (isAttacking(targetIndex, team["bishops"][i], "bishops", grid))
+            return {
+                isCheck: true,
+                type: "bishops",
+                peiceIndex: team["bishops"][i],
+            };
     }
 
-    if (isAttacking(targetIndex, team["queen"][0], "queen", grid))
-        return { isCheck: true, type: "queen", peiceIndex: team["queen"][0] };    
-    
+    for (let i = 0; i < team["queen"].length; i++)
+        if (isAttacking(targetIndex, team["queen"][i], "queen", grid))
+            return {
+                isCheck: true,
+                type: "queen",
+                peiceIndex: team["queen"][i],
+            };
+
     return { isCheck: false, type: "", peiceIndex: -1 };
 };
 
@@ -121,15 +140,20 @@ const possibleMoves = (team, enemy) => {
     grid[enemy["king"][0]] = "e";
     grid[team["king"][0]] = "t";
 
-    if (enemy["queen"][0] >= 0) grid[enemy["queen"][0]] = "e";
-    if (team["queen"][0] >= 0) grid[team["queen"][0]] = "t";
+    for (let i = 0; i < enemy["queen"].length; i++)
+        if (enemy["queen"][i] >= 0) grid[enemy["queen"][i]] = "e";
+    for (let i = 0; i < team["queen"].length; i++)
+        if (team["queen"][i] >= 0) grid[team["queen"][i]] = "t";
 
-    const {isCheck, type, peiceIndex} = isUnderAttack(team["king"][0], enemy, grid);
+    const { isCheck, type, peiceIndex } = isUnderAttack(
+        team["king"][0],
+        enemy,
+        grid
+    );
     const kingIndex = team["king"][0];
 
-    if(!isCheck)
-        return true;
-    
+    if (!isCheck) return true;
+
     const iq = Math.floor(kingIndex / 8);
     const jq = kingIndex % 8;
 
@@ -142,35 +166,42 @@ const possibleMoves = (team, enemy) => {
     // Check if king can be moved
     const n_rows = [1, 1, 1, -1, -1, -1, 0, 0];
     const n_cols = [1, 0, -1, 1, 0, -1, 1, -1];
-    for(let i = 0; i<8; i++)
-    {
-        if(iq + n_rows[i] < 0 || iq + n_rows[i] > 8 || jq + n_cols[i] < 0 || jq + n_cols[i] > 8)
+    for (let i = 0; i < 8; i++) {
+        if (
+            iq + n_rows[i] < 0 ||
+            iq + n_rows[i] > 8 ||
+            jq + n_cols[i] < 0 ||
+            jq + n_cols[i] > 8
+        )
             continue;
 
-        const index = 8*(iq + n_rows[i]) + jq + n_cols[i];
-        if(grid[index] === "t")
-            continue;
+        const index = 8 * (iq + n_rows[i]) + jq + n_cols[i];
+        if (grid[index] === "t") continue;
 
-        const {isCheck, type, peiceIndex} = isUnderAttack(index, enemy, grid);
-        if(isCheck)
-            continue;
+        const { isCheck, type, peiceIndex } = isUnderAttack(index, enemy, grid);
+        if (isCheck) continue;
         return true;
     }
 
-    const {isCheck: tempCheck, type: tempType, peiceIndex: tempIndex} = isUnderAttack(peiceIndex, team, grid);
-    if(tempCheck)
-        return true;
+    const {
+        isCheck: tempCheck,
+        type: tempType,
+        peiceIndex: tempIndex,
+    } = isUnderAttack(peiceIndex, team, grid);
+    if (tempCheck) return true;
 
-    if(type === "knights" || type === "pawns")
-        return false;
-    
+    if (type === "knights" || type === "pawns") return false;
+
     while (ip > 0 && ip < 8 && jp > 0 && jp < 8) {
         ip += di;
         jp += dj;
         if (ip === iq && jp === jq) return false;
-        const {isCheck: tempCheck, type: tempType, peiceIndex: tempIndex} = isUnderAttack(8*ip + jp, team, grid);
-        if (tempCheck)
-            return true;
+        const {
+            isCheck: tempCheck,
+            type: tempType,
+            peiceIndex: tempIndex,
+        } = isUnderAttack(8 * ip + jp, team, grid);
+        if (tempCheck) return true;
     }
 
     return false;

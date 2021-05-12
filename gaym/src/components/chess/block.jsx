@@ -73,17 +73,20 @@ const Block = (props) => {
 
     return (
         <div
-            className="block"
+            className={
+                (blockIndex + Math.floor(blockIndex / 8)) % 2 === 0
+                    ? "block bl"
+                    : "block"
+            }
             draggable={turn && team ? "true" : "false"}
             onDrag={onDrag}
             onDragOver={onDragOver}
             onDragEnter={onDragEnter}
             onDrop={onDrop}
         >
-            <span>{blockIndex}</span>
             <img
                 src={src}
-                height="80px"
+                height="70px"
                 alt=""
                 draggable={turn && team ? "true" : "false"}
             ></img>

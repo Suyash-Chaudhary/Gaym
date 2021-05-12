@@ -77,24 +77,25 @@ const isAttacking = (kingIndex, peiceIndex, type, grid) => {
 
 const isUnderAttack = (targetIndex, team, grid) => {
     for (let i = 0; i < 8; i++)
-        if(isAttacking(targetIndex, team["pawns"][i], "pawns", grid))
+        if (isAttacking(targetIndex, team["pawns"][i], "pawns", grid))
             return true;
 
-    for (let i = 0; i < 2; i++)
-    {
-        if(isAttacking(targetIndex, team["rooks"][i], "rooks", grid))
+    for (let i = 0; i < 2; i++) {
+        if (isAttacking(targetIndex, team["rooks"][i], "rooks", grid))
             return true;
-        
-        if(isAttacking(targetIndex, team["knights"][i], "knights", grid))
+
+        if (isAttacking(targetIndex, team["knights"][i], "knights", grid))
             return true;
-        
-        if(isAttacking(targetIndex, team["bishops"][i], "bishops", grid))
+
+        if (isAttacking(targetIndex, team["bishops"][i], "bishops", grid))
             return true;
     }
 
-    if (isAttacking(targetIndex, team["queen"][0], "queen", grid))
-        return true;    
-    
+    for (let i = 0; i < team["queen"].length; i++) {
+        if (isAttacking(targetIndex, team["queen"][i], "queen", grid))
+            return true;
+    }
+
     return false;
 };
 
@@ -121,8 +122,10 @@ const isKingCheck = (team, enemy) => {
     grid[enemy["king"][0]] = 1;
     grid[team["king"][0]] = 1;
 
-    if (enemy["queen"][0] >= 0) grid[enemy["queen"][0]] = 1;
-    if (team["queen"][0] >= 0) grid[team["queen"][0]] = 1;
+    for (let i = 0; i < enemy["queen"].length; i++)
+        if (enemy["queen"][i] >= 0) grid[enemy["queen"][i]] = 1;
+    for (let i = 0; i < team["queen"].length; i++)
+        if (team["queen"][i] >= 0) grid[team["queen"][i]] = 1;
 
     return isUnderAttack(team["king"][0], enemy, grid);
 };
