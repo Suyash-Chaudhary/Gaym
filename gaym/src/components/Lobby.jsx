@@ -6,7 +6,7 @@ import unsubscribeToRoom from "./utils/unsubscribeToRoom";
 
 const Lobby = (props) => {
     const { roomId, name, setIsReady, game } = props;
-    const [start, setStart] = useState(false);
+    const [start, setStart] = useState({begin: false, played: false, msg: ""});
     const [turn, setTurn] = useState(false);
     const socket = useContext(SocketContext);
 
@@ -23,12 +23,12 @@ const Lobby = (props) => {
     };
 
     const handleQuit = () => {
-        setIsReady(false);
+        setIsReady({ ready: false, roomId: "", name: name });
     };
 
     return (
         <>
-            {start ? (
+            {start.begin ? (
                 <ChessBoard
                     onQuit={handleQuit}
                     name={name}
@@ -39,7 +39,7 @@ const Lobby = (props) => {
                 <div className="chess-lobby">
                     <div>Room: {roomId}</div>
                     <div>Name: {name}</div>
-                    <span>Waiting for a player</span>
+                    {start.played ? <span>{start.msg}</span>: <span>Waiting for a player</span>}
                     <button onClick={handleLeave}>Leave</button>
                 </div>
             )}

@@ -1,4 +1,4 @@
-const isAttackingKing = (kingIndex, peiceIndex, type, grid) => {
+const isAttacking = (kingIndex, peiceIndex, type, grid) => {
     if (peiceIndex === -1) return false;
 
     const iq = Math.floor(kingIndex / 8);
@@ -75,6 +75,29 @@ const isAttackingKing = (kingIndex, peiceIndex, type, grid) => {
     return false;
 };
 
+const isUnderAttack = (targetIndex, team, grid) => {
+    for (let i = 0; i < 8; i++)
+        if(isAttacking(targetIndex, team["pawns"][i], "pawns", grid))
+            return true;
+
+    for (let i = 0; i < 2; i++)
+    {
+        if(isAttacking(targetIndex, team["rooks"][i], "rooks", grid))
+            return true;
+        
+        if(isAttacking(targetIndex, team["knights"][i], "knights", grid))
+            return true;
+        
+        if(isAttacking(targetIndex, team["bishops"][i], "bishops", grid))
+            return true;
+    }
+
+    if (isAttacking(targetIndex, team["queen"][0], "queen", grid))
+        return true;    
+    
+    return false;
+};
+
 const isKingCheck = (team, enemy) => {
     console.log("Is King Check", { team, enemy });
     let grid = [];
@@ -101,36 +124,7 @@ const isKingCheck = (team, enemy) => {
     if (enemy["queen"][0] >= 0) grid[enemy["queen"][0]] = 1;
     if (team["queen"][0] >= 0) grid[team["queen"][0]] = 1;
 
-    for (let i = 0; i < 8; i++) {
-        if (isAttackingKing(team["king"][0], enemy["pawns"][i], "pawns", grid))
-            return true;
-    }
-    for (let i = 0; i < 2; i++) {
-        if (isAttackingKing(team["king"][0], enemy["rooks"][i], "rooks", grid))
-            return true;
-        if (
-            isAttackingKing(
-                team["king"][0],
-                enemy["knights"][i],
-                "knights",
-                grid
-            )
-        )
-            return true;
-        if (
-            isAttackingKing(
-                team["king"][0],
-                enemy["bishops"][i],
-                "bishops",
-                grid
-            )
-        )
-            return true;
-    }
-    if (isAttackingKing(team["king"][0], enemy["queen"][0], "queen", grid))
-        return true;
-
-    return false;
+    return isUnderAttack(team["king"][0], enemy, grid);
 };
 
 export default isKingCheck;

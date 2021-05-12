@@ -84,10 +84,20 @@ io.on("connection", (socket, data) => {
             delete rooms[roomId];
         }
         io.to(roomId).emit("player-left", name);
-        io.to(roomId).emit("game-over");
+        io.to(roomId).emit("game-over", `${name} left, waiting for players`);
     });
     socket.on("player-move", (data) => {
         const { name, roomId, game } = data;
         io.to(roomId).emit("enemy-move", data);
+    });
+    socket.on("game-tied", (data) => {
+        const { name, roomId, game } = data;
+        io.to(roomId).emit("game-tied", data);
+        io.to(roomId).emit("game-over", "Game Tied");
+    });
+    socket.on("player-lose", (data) => {
+        const { name, roomId, game } = data;
+        io.to(roomId).emit("player-lost", data);
+        io.to(roomId).emit("game-over", `${name} lost`);
     });
 });

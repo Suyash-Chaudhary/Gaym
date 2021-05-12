@@ -8,6 +8,8 @@ const unsubscribeToRoom = (socket, name, roomId, game) => {
     socket.off("game-begin");
     socket.off("player-left");
     socket.off("game-over");
+    socket.off("game-tied");
+    socket.off("player-lost");
 };
 
 export default unsubscribeToRoom;

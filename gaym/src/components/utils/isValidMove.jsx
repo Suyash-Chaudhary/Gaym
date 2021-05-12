@@ -1,4 +1,4 @@
-const isValidMove = (grid, team, drag, blockIndex) => {
+const isValidMove = (grid, team, drag, blockIndex, enemy) => {
     console.log("isValidMove", { grid, team, drag, blockIndex });
     const { type, index } = drag;
 
@@ -7,7 +7,10 @@ const isValidMove = (grid, team, drag, blockIndex) => {
     const iindex = team[type][index];
     const ix = Math.floor(iindex / 8);
     const iy = iindex % 8;
+    const xEnemyKing = Math.floor(enemy["king"][0] / 8);
+    const yEnemyKing = enemy["king"][0] % 8;
 
+    if (type === "king" && Math.abs(fx - xEnemyKing) <= 1 && Math.abs(fy - yEnemyKing) <= 1) return false;
     if (grid[blockIndex].team && grid[blockIndex].type !== "") return false;
 
     switch (type) {

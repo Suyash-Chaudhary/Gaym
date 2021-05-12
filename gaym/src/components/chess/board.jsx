@@ -11,6 +11,7 @@ import updateTeam from "./../utils/updateTeam";
 import isValidMove from "./../utils/isValidMove";
 import getBoardFromMove from "./../utils/getBoardFromMove";
 import isKingCheck from "./../utils/isKingCheck";
+import possibleMoves from "../utils/possibleMoves";
 import { SocketContext } from "../../hooks/socket";
 
 const ChessBoard = (props) => {
@@ -20,10 +21,22 @@ const ChessBoard = (props) => {
     const [grid, setGrid] = useState(generateGrid(initTeam, initEnemy));
     const [drag, setDrag] = useState({});
     const [turn, setTurn] = useState(initTurn);
+    const [time, setTime] = useState(30)
     const socket = useContext(SocketContext);
-    // const gridRef = useRef();
-    // const teamRef = useRef();
-    // const enemyRef = useRef();
+    const gridRef = useRef();
+    const teamRef = useRef();
+    const enemyRef = useRef();
+
+    const tick = () => {
+        if(turn)
+            setTime(time - 1);
+    };
+
+    useEffect(() => {
+        if(time === 0) socket.emit("player-lose", {name, game: "chess", roomId});
+        const timerId = setInterval(() => tick(), 1000);
+        return () => clearInterval(timerId);
+    }, [time, turn]);
 
     useEffect(() => {
         socket.on("enemy-move", (data) => {
@@ -31,17 +44,20 @@ const ChessBoard = (props) => {
 
             if (enemyName !== name) {
                 const { newEnemy, newTeam } = getBoardFromMove(
-                    //teamRef,
-                    team,
+                    teamRef,
                     enemyTeam,
-                    //gridRef
-                    grid
+                    gridRef
                 );
-
-                console.log("King under check", isKingCheck(newTeam, newEnemy));
-                setTeam({ ...newTeam });
-                setEnemy({ ...newEnemy });
-                setTurn(true);
+            
+                const isMovePossible = possibleMoves(newTeam, newEnemy);
+                if(!isMovePossible)
+                    socket.emit("player-lose", {name, game: "chess", roomId});
+                else
+                {
+                    setTeam({ ...newTeam });
+                    setEnemy({ ...newEnemy });
+                    setTurn(true);
+                }
             }
         });
 
@@ -51,12 +67,12 @@ const ChessBoard = (props) => {
     }, []);
 
     useEffect(() => {
-        // teamRef.current = team;
-        // enemyRef.current = enemy;
+        teamRef.current = team;
+        enemyRef.current = enemy;
         if (enemy.knights) {
             const newGrid = generateGrid(team, enemy);
             setGrid(newGrid);
-            // gridRef.current = newGrid;
+            gridRef.current = newGrid;
         }
     }, [enemy, team]);
 
@@ -65,7 +81,7 @@ const ChessBoard = (props) => {
     };
 
     const handleDrop = (blockIndex) => {
-        const isValid = isValidMove(grid, team, drag, blockIndex);
+        const isValid = isValidMove(grid, team, drag, blockIndex, enemyRef.current);
         if (!isValid) return;
 
         const newEnemy =
@@ -98,7 +114,7 @@ const ChessBoard = (props) => {
     return (
         <>
             <span>
-                Name: {name} roomId:{roomId}
+                Name: {name} roomId:{roomId} time:{time}
             </span>
             <div className="board">
                 {grid.map((g, i) => (

@@ -1,5 +1,6 @@
-const getBoardFromMove = (team, enemyTeam, grid) => {
-    console.log("Get Board From Move", { team, enemyTeam, grid });
+const getBoardFromMove = (teamRef, enemyTeam, gridRef) => {
+    const team = teamRef.current;
+    const grid = gridRef.current;
     const newEnemy = {
         knights: [...enemyTeam.knights],
         rooks: [...enemyTeam.rooks],
