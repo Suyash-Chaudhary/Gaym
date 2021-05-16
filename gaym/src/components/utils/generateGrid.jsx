@@ -1,5 +1,4 @@
 const generateGrid = (team, enemy, msg) => {
-    console.log(`Generate Grid: ${msg}`, { team, enemy });
     const newGrid = [];
     const teamDead = [];
     const enemyDead = [];

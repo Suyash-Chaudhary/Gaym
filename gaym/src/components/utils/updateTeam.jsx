@@ -1,5 +1,4 @@
 const updateTeam = (team, blockIndex, drag) => {
-    console.log("Update Team", { team, blockIndex, drag });
     const { type, index } = drag;
     const newTeam = {
         knights: [...team.knights],

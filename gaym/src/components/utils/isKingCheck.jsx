@@ -100,7 +100,6 @@ const isUnderAttack = (targetIndex, team, grid) => {
 };
 
 const isKingCheck = (team, enemy) => {
-    console.log("Is King Check", { team, enemy });
     let grid = [];
     for (let i = 0; i < 64; i++) grid.push(0);
 

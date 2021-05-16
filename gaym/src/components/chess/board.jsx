@@ -13,6 +13,7 @@ import getBoardFromMove from "./../utils/getBoardFromMove";
 import isKingCheck from "./../utils/isKingCheck";
 import possibleMoves from "../utils/possibleMoves";
 import { SocketContext } from "../../hooks/socket";
+import getHighlight from "../utils/getHighlight";
 
 const ChessBoard = (props) => {
     const { name, roomId, onQuit, startPlayer } = props;
@@ -23,6 +24,7 @@ const ChessBoard = (props) => {
     const [drag, setDrag] = useState({});
     const [turn, setTurn] = useState(initTurn);
     const [time, setTime] = useState(3600);
+    const [highlight, setHighlight] = useState([]);
     const [teamDeadPeices, setTeamDeadPeices] = useState([]);
     const [enemyDeadPeices, setEnemyDeadPeices] = useState([]);
     const socket = useContext(SocketContext);
@@ -45,6 +47,9 @@ const ChessBoard = (props) => {
         setEnemy(initEnemy);
         setTeam(initTeam);
         setGrid(generateGrid(initTeam, initEnemy, "initial").newGrid);
+        const initHighlight = [];
+        for (let i = 0; i < 64; i++) initHighlight.push(false);
+        setHighlight(initHighlight);
         socket.on("enemy-move", (data) => {
             const { name: enemyName, newTeam: enemyTeam } = data;
 
@@ -54,8 +59,8 @@ const ChessBoard = (props) => {
                     enemyTeam,
                     gridRef
                 );
-
                 const isMovePossible = possibleMoves(newTeam, newEnemy);
+                console.log({ isMovePossible });
                 if (!isMovePossible)
                     socket.emit("player-lose", { name, game: "chess", roomId });
                 else {
@@ -87,11 +92,16 @@ const ChessBoard = (props) => {
         }
     }, [enemy, team]);
 
-    const handleDrag = (type, index) => {
+    const handleDrag = (type, index, blockIndex) => {
+        const newHighlight = getHighlight(type, blockIndex, teamRef, gridRef);
+        setHighlight(newHighlight);
         setDrag({ type, index });
     };
 
     const handleDrop = (blockIndex) => {
+        const newHighlight = [];
+        for (let i = 0; i < 64; i++) newHighlight.push(false);
+        setHighlight(newHighlight);
         const isValid = isValidMove(
             grid,
             team,
@@ -111,7 +121,6 @@ const ChessBoard = (props) => {
 
         const newTeam = updateTeam(team, blockIndex, drag);
         const isCheck = isKingCheck(newTeam, newEnemy);
-        console.log("Is King Under Check", isCheck);
 
         if (!isCheck) {
             setTeam(newTeam);
@@ -187,6 +196,7 @@ const ChessBoard = (props) => {
                                 handleDrop={handleDrop}
                                 turn={turn}
                                 isWhite={initTurn}
+                                highlight={highlight[i]}
                             ></Block>
                         ))}
                     </div>

@@ -24,11 +24,12 @@ const Block = (props) => {
         handleDrop,
         turn,
         isWhite,
+        highlight,
     } = props;
 
     const onDrag = (e) => {
         e.preventDefault();
-        handleDrag(type, index);
+        handleDrag(type, index, blockIndex);
     };
 
     const onDragOver = (e) => {
@@ -71,19 +72,23 @@ const Block = (props) => {
             break;
     }
 
+    const formatClass = (blockIndex, highlight) => {
+        if (highlight) return type !== "" ? "block capture" : "block high";
+        return (blockIndex + Math.floor(blockIndex / 8)) % 2 === 0
+            ? "block bl"
+            : "block";
+    };
+
     return (
         <div
-            className={
-                (blockIndex + Math.floor(blockIndex / 8)) % 2 === 0
-                    ? "block bl"
-                    : "block"
-            }
+            className={formatClass(blockIndex, highlight)}
             draggable={turn && team ? "true" : "false"}
             onDrag={onDrag}
             onDragOver={onDragOver}
             onDragEnter={onDragEnter}
             onDrop={onDrop}
         >
+            <span>{blockIndex}</span>
             <img
                 src={src}
                 height="70px"

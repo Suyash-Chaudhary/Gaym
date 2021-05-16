@@ -21,7 +21,18 @@ const isAttacking = (kingIndex, peiceIndex, type, grid) => {
                 return true;
             break;
         case "pawns":
-            if (iq - ip === 1 && Math.abs(jq - jp) === 1) return true;
+            if (
+                grid[peiceIndex] === "t" &&
+                iq - ip === -1 &&
+                Math.abs(jq - jp) === 1
+            )
+                return true;
+            if (
+                grid[peiceIndex] === "e" &&
+                iq - ip === 1 &&
+                Math.abs(jq - jp) === 1
+            )
+                return true;
             break;
         case "rooks":
             if (iq === ip || jq === jp) {
@@ -151,6 +162,7 @@ const possibleMoves = (team, enemy) => {
         grid
     );
     const kingIndex = team["king"][0];
+    console.log({ isCheck, type, peiceIndex });
 
     if (!isCheck) return true;
 
@@ -169,9 +181,9 @@ const possibleMoves = (team, enemy) => {
     for (let i = 0; i < 8; i++) {
         if (
             iq + n_rows[i] < 0 ||
-            iq + n_rows[i] > 8 ||
+            iq + n_rows[i] >= 8 ||
             jq + n_cols[i] < 0 ||
-            jq + n_cols[i] > 8
+            jq + n_cols[i] >= 8
         )
             continue;
 
@@ -180,6 +192,7 @@ const possibleMoves = (team, enemy) => {
 
         const { isCheck, type, peiceIndex } = isUnderAttack(index, enemy, grid);
         if (isCheck) continue;
+        console.log(`King can be moved to ${index}`);
         return true;
     }
 
@@ -188,11 +201,16 @@ const possibleMoves = (team, enemy) => {
         type: tempType,
         peiceIndex: tempIndex,
     } = isUnderAttack(peiceIndex, team, grid);
+    console.log("Can attacking peice be removed", {
+        tempCheck,
+        tempType,
+        tempIndex,
+    });
     if (tempCheck) return true;
 
     if (type === "knights" || type === "pawns") return false;
 
-    while (ip > 0 && ip < 8 && jp > 0 && jp < 8) {
+    while (ip >= 0 && ip < 8 && jp >= 0 && jp < 8) {
         ip += di;
         jp += dj;
         if (ip === iq && jp === jq) return false;
@@ -201,7 +219,10 @@ const possibleMoves = (team, enemy) => {
             type: tempType,
             peiceIndex: tempIndex,
         } = isUnderAttack(8 * ip + jp, team, grid);
-        if (tempCheck) return true;
+        if (tempCheck) {
+            console.log("Can be blocked at", { isCheck, tempType, tempIndex });
+            return true;
+        }
     }
 
     return false;

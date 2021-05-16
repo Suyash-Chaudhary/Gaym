@@ -1,5 +1,4 @@
 const isValidMove = (grid, team, drag, blockIndex, enemy) => {
-    console.log("isValidMove", { grid, team, drag, blockIndex });
     const { type, index } = drag;
 
     const fx = Math.floor(blockIndex / 8);
@@ -12,8 +11,6 @@ const isValidMove = (grid, team, drag, blockIndex, enemy) => {
 
     const dx = fx - ix === 0 ? 0 : (fx - ix) / Math.abs(fx - ix);
     const dy = fy - iy === 0 ? 0 : (fy - iy) / Math.abs(fy - iy);
-    console.log("Points", { ix, iy, fx, fy });
-    console.log("Diffs", { dx, dy });
 
     if (
         type === "king" &&

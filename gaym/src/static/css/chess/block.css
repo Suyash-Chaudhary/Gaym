@@ -1,4 +1,5 @@
 .block {
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     background-color: #ddc6b2;
@@ -9,4 +10,14 @@
 
 .bl {
     background-color: #9b6e58;
+}
+
+.high {
+    background-color: chartreuse;
+    border: 2px solid white;
+}
+
+.capture {
+    background-color: red;
+    border: 2px solid white;
 }
